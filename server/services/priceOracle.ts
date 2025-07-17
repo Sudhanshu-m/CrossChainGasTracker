@@ -10,9 +10,10 @@ export class PriceOracle {
   // Uniswap V3 ETH/USDC pool address
   private readonly POOL_ADDRESS = '0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640';
   
-  // Pool ABI for Swap events
+  // Pool ABI for Swap events and slot0 function
   private readonly POOL_ABI = [
-    'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)'
+    'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+    'function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)'
   ];
 
   constructor() {}
@@ -23,10 +24,73 @@ export class PriceOracle {
     this.isRunning = true;
     console.log('Starting price oracle...');
 
-    // Since demo endpoints are rate limited, we'll simulate ETH/USD price updates
-    console.log('Using simulated ETH/USD prices due to demo endpoint rate limits');
+    try {
+      // Try to connect to Uniswap V3 first
+      await this.connectToUniswap();
+    } catch (error) {
+      console.log('Failed to connect to Uniswap V3, using simulated prices:', error.message);
+      this.startPriceSimulation();
+    }
+  }
+
+  private async connectToUniswap(): Promise<void> {
+    const rpcUrl = process.env.ETHEREUM_RPC_URL || 'https://eth-mainnet.g.alchemy.com/v2/demo';
+    this.provider = new ethers.JsonRpcProvider(rpcUrl);
     
-    this.startPriceSimulation();
+    // Test connection
+    await this.provider.getNetwork();
+    console.log('Connected to Ethereum network');
+    
+    this.uniswapV3Pool = new ethers.Contract(
+      this.POOL_ADDRESS,
+      this.POOL_ABI,
+      this.provider
+    );
+
+    // Get current price from pool
+    const slot0 = await this.uniswapV3Pool.slot0();
+    const initialPrice = this.calculatePriceFromSqrtPriceX96(slot0.sqrtPriceX96);
+    
+    await storage.saveEthPrice({ price: initialPrice });
+    this.emitPriceUpdate(initialPrice);
+    
+    console.log(`Initial ETH/USD price from Uniswap V3: $${initialPrice.toFixed(2)}`);
+    
+    // Set up polling for price updates (every 30 seconds)
+    this.priceUpdateInterval = setInterval(() => {
+      this.fetchCurrentPrice();
+    }, 30000);
+  }
+
+  private async fetchCurrentPrice(): Promise<void> {
+    try {
+      if (!this.uniswapV3Pool) return;
+      
+      const slot0 = await this.uniswapV3Pool.slot0();
+      const price = this.calculatePriceFromSqrtPriceX96(slot0.sqrtPriceX96);
+      
+      await storage.saveEthPrice({ price });
+      this.emitPriceUpdate(price);
+      
+      console.log(`ETH/USD price updated from Uniswap V3: $${price.toFixed(2)}`);
+    } catch (error) {
+      console.error('Error fetching current price:', error);
+    }
+  }
+
+  private calculatePriceFromSqrtPriceX96(sqrtPriceX96: any): number {
+    try {
+      // Convert sqrtPriceX96 to price
+      // For ETH/USDC pool, we need to calculate: (sqrtPriceX96 / 2^96)^2 * 10^12
+      const sqrtPrice = Number(sqrtPriceX96) / Math.pow(2, 96);
+      const price = Math.pow(sqrtPrice, 2) * Math.pow(10, 12);
+      
+      // Ensure reasonable price bounds
+      return Math.max(100, Math.min(10000, price));
+    } catch (error) {
+      console.error('Error calculating price from sqrtPriceX96:', error);
+      return 2500; // Fallback price
+    }
   }
 
   private startPriceSimulation(): void {

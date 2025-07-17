@@ -25,8 +25,8 @@ export function GasChart() {
         // Dynamic import of lightweight-charts
         const { createChart, ColorType } = await import('lightweight-charts');
         
-        const newChart = createChart(chartRef.current!, {
-          width: chartRef.current!.clientWidth,
+        const newChart = createChart(chartRef.current, {
+          width: chartRef.current?.clientWidth || 800,
           height: 400,
           layout: {
             background: { type: ColorType.Solid, color: '#1e293b' },

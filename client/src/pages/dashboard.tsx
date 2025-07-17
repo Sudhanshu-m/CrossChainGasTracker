@@ -5,6 +5,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { GasPriceCard } from '../components/GasPriceCard';
 import { GasChart } from '../components/GasChart';
 import { TransactionSimulator } from '../components/TransactionSimulator';
+import { WalletSimulator } from '../components/WalletSimulator';
 import { HistoricalDataTable } from '../components/HistoricalDataTable';
 import { formatUsd, formatTime } from '../lib/blockchain';
 import { TrendingUp, Wifi, WifiOff } from 'lucide-react';
@@ -89,7 +90,7 @@ export default function Dashboard() {
           {/* Chart and Simulator */}
           <div className="lg:col-span-3 space-y-6">
             <GasChart />
-            <TransactionSimulator />
+            {mode === 'live' ? <TransactionSimulator /> : <WalletSimulator />}
           </div>
         </div>
         
