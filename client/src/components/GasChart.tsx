@@ -12,21 +12,31 @@ export function GasChart() {
   const [chart, setChart] = useState<any>(null);
   const [series, setSeries] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [chartReady, setChartReady] = useState(false);
   
   const { chartInterval, selectedChains, setChartInterval, toggleChainSelection } = useGasStore();
   const { getGasHistory } = useGasTracker();
 
-  // Initialize chart
+  // Initialize chart with proper error handling
   useEffect(() => {
-    if (!chartRef.current) return;
-
+    let mounted = true;
+    
     const initChart = async () => {
+      if (!chartRef.current || !mounted) return;
+
       try {
+        // Wait for container to be ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (!chartRef.current || !mounted) return;
+
         // Dynamic import of lightweight-charts
         const { createChart, ColorType } = await import('lightweight-charts');
         
+        const containerWidth = chartRef.current.clientWidth || 800;
+        
         const newChart = createChart(chartRef.current, {
-          width: chartRef.current?.clientWidth || 800,
+          width: containerWidth,
           height: 400,
           layout: {
             background: { type: ColorType.Solid, color: '#1e293b' },
@@ -55,8 +65,11 @@ export function GasChart() {
           wickUpColor: '#10b981',
         });
 
-        setChart(newChart);
-        setSeries(candlestickSeries);
+        if (mounted) {
+          setChart(newChart);
+          setSeries(candlestickSeries);
+          setChartReady(true);
+        }
 
         // Handle resize
         const handleResize = () => {
@@ -68,30 +81,44 @@ export function GasChart() {
         };
 
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          if (newChart) {
+            newChart.remove();
+          }
+        };
       } catch (error) {
         console.error('Error initializing chart:', error);
       }
     };
 
     initChart();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Update chart data
   useEffect(() => {
-    if (!chart || !series || selectedChains.length === 0) return;
+    if (!chartReady || !chart || !series || selectedChains.length === 0) return;
 
     const updateChartData = async () => {
       setLoading(true);
       try {
         const intervalValue = CHART_INTERVALS[chartInterval as keyof typeof CHART_INTERVALS]?.value || 15;
         
-        // For now, use the first selected chain
+        // Use the first selected chain
         const primaryChain = selectedChains[0];
         const history = await getGasHistory(primaryChain, 24);
         
-        const candleData = aggregateToCandles(history, intervalValue);
-        series.setData(candleData);
+        if (history && history.length > 0) {
+          const candleData = aggregateToCandles(history, intervalValue);
+          if (candleData.length > 0) {
+            series.setData(candleData);
+          }
+        }
       } catch (error) {
         console.error('Error updating chart data:', error);
       } finally {
@@ -100,7 +127,7 @@ export function GasChart() {
     };
 
     updateChartData();
-  }, [chart, series, chartInterval, selectedChains]);
+  }, [chartReady, chart, series, chartInterval, selectedChains]);
 
   return (
     <Card className="bg-slate-800 border-slate-700">
