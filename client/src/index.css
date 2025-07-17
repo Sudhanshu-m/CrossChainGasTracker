@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 33%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(224, 71%, 4%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(224, 71%, 4%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(215, 27%, 32%);
+  --input: hsl(215, 27%, 32%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(215, 27%, 32%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(215, 27%, 32%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(216, 34%, 17%);
+  --radius: 0.5rem;
+  --chart-1: hsl(220, 70%, 50%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+}
+
+.dark {
+  --background: hsl(224, 71%, 4%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(223, 47%, 11%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(224, 71%, 4%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(224, 71%, 4%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(215, 27%, 32%);
+  --input: hsl(215, 27%, 32%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(215, 27%, 32%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(215, 27%, 32%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(216, 34%, 17%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom Web3 styles */
+.chain-gradient-eth {
+  background: linear-gradient(135deg, #627EEA 0%, #4A5FCC 100%);
+}
+
+.chain-gradient-polygon {
+  background: linear-gradient(135deg, #8247E5 0%, #6B3BC7 100%);
+}
+
+.chain-gradient-arbitrum {
+  background: linear-gradient(135deg, #28A0F0 0%, #2080C7 100%);
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chart-container {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.number-font {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ensure proper dark theme throughout */
+.bg-slate-900 { background-color: hsl(222, 47%, 11%); }
+.bg-slate-800 { background-color: hsl(215, 25%, 27%); }
+.bg-slate-700 { background-color: hsl(215, 20%, 65%); }
+.border-slate-700 { border-color: hsl(215, 27%, 32%); }
+.text-slate-300 { color: hsl(212, 13%, 83%); }
+.text-slate-400 { color: hsl(215, 20%, 65%); }
+.text-slate-500 { color: hsl(215, 16%, 47%); }
