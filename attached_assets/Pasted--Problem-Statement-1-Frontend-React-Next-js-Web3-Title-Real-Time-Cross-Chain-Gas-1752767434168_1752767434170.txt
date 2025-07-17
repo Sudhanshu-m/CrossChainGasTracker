@@ -1,0 +1,81 @@
+# **Problem Statement 1: Frontend (React/Next.js + Web3)**
+
+**Title**: **Real-Time Cross-Chain Gas Price Tracker with Wallet Simulation**
+
+**Objective**: Build a dashboard that:
+
+1. Fetches real-time gas prices from Ethereum, Polygon, and Arbitrum using their native RPC endpoints (no third-party APIs).
+2. Simulates wallet interactions: When a user enters a transaction value (ETH/MATIC/ETH), the dashboard must **calculate and visualize** the USD cost of gas + transaction across all three chains using live ETH/USD prices (via **`ethers.getLogs`** from Uniswap V3's ETH/USDC pool).
+3. **Visualize** the data in an interactive candlestick chart (using **`lightweight-charts`**) showing gas price volatility over 15-minute intervals.
+
+```mermaid
+graph LR
+  A[User] --> B[Next.js Frontend]
+  B --> C[Zustand State Store]
+  C --> D{Mode}
+  D -->|Live| E[WebSocket Providers]
+  D -->|Simulate| F[Transaction Calculator]
+  E --> G[Ethereum RPC]
+  E --> H[Polygon RPC]
+  E --> I[Arbitrum RPC]
+  F --> J[Uniswap V3 ETH/USDC Pool]
+  J --> K[Parse Swap Events]
+  K --> L[Calculate ETH/USD]
+  L --> M[Gas Cost USD]
+  G --> N[Base/Priority Fees]
+  H --> N
+  I --> N
+  N --> O[Candlestick Chart]
+  O --> P[Lightweight Charts]
+  M --> P
+
+```
+
+**Key Complexity**:
+
+- Use **`ethers.providers.WebSocketProvider`** for real-time updates.
+- **Zustand Challenge**: Implement a state machine to handle "simulation mode" (user inputs) and "live mode" (auto-refresh) with shared state between the chart and gas widgets.
+- **Web3.js/Ethers.js Nuance**: Directly parse Uniswap V3's **`Swap`** events to compute ETH/USD without libraries like **`Uniswap-sdk`**.
+- **Gas Simulations**: Gas calculations must include priority fees and base fees, and handle chain-specific data structures (e.g., Arbitrum's L1 pricing).
+
+**Expanded Requirements**:
+
+1. **Real-Time Gas Engine**:
+    - Implement WebSocket connections to Ethereum/Polygon/Arbitrum RPCs
+    - Extract `baseFeePerGas`, `maxPriorityFeePerGas` from new blocks
+    - Update Zustand store every 6 seconds per chain
+2. **USD Pricing**:
+    - Directly read Uniswap V3's `Swap` events at `0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640`
+    - Calculate ETH/USD price from raw `sqrtPriceX96` values using:
+        
+        ```jsx
+        price = (sqrtPriceX96**2 * 10**12) / (2**192)
+        
+        ```
+        
+    - Handle USDC decimal conversion (6 decimals)
+3. **State Machine Complexity**:
+    - Zustand must manage:
+        
+        ```
+        state: {
+          mode: 'live' | 'simulation',
+          chains: {
+            ethereum: { baseFee: number, priorityFee: number, history: GasPoint[] },
+            // ...other chains
+          },
+          usdPrice: number
+        }
+        
+        ```
+        
+    - Historical data aggregation for 15-min candlestick intervals
+4. **Simulation Challenge**:
+    - When user inputs 0.5 ETH transfer:
+        
+        ```jsx
+        costUSD = (baseFee + priorityFee) * 21000 * usdPrice
+        
+        ```
+        
+    - Visualize cross-chain cost comparison in table
