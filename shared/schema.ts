@@ -63,7 +63,7 @@ export interface GasPoint {
 }
 
 export interface SimulationResult {
-  ethereum: number;
-  polygon: number;
-  arbitrum: number;
+  ethereum: { costInUsd: number; gasCost: number; };
+  polygon: { costInUsd: number; gasCost: number; };
+  arbitrum: { costInUsd: number; gasCost: number; };
 }

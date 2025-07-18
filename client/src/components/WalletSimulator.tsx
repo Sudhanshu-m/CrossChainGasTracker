@@ -66,7 +66,7 @@ export function WalletSimulator() {
   };
 
   const getGasStatus = (chain: string) => {
-    const currentGas = gasPrices.find(gp => gp.chain === chain);
+    const currentGas = gasPrices.find((gp: { chain: string; baseFee: number; priorityFee: number; }) => gp.chain === chain);
     if (!currentGas) return 'unknown';
     
     const totalGas = currentGas.baseFee + currentGas.priorityFee;

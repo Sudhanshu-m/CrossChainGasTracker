@@ -13,6 +13,7 @@ interface GasStore {
   simulationResults: SimulationResult | null;
   chartInterval: string;
   selectedChains: string[];
+  gasPrices: Array<{ chain: string; baseFee: number; priorityFee: number; }>;
 
   // Actions
   setMode: (mode: 'live' | 'simulation') => void;
@@ -62,6 +63,7 @@ export const useGasStore = create<GasStore>((set, get) => ({
   simulationResults: null,
   chartInterval: '15m',
   selectedChains: ['ethereum', 'polygon', 'arbitrum'],
+  gasPrices: [],
 
   // Actions
   setMode: (mode) => set({ mode }),

@@ -137,10 +137,10 @@ export function TransactionSimulator() {
                     </div>
                     <div className="text-right">
                       <div className="font-mono text-white font-semibold">
-                        {result ? formatUsd(result.costInUsd) : '--'}
+                        {result && typeof result === 'object' && 'costInUsd' in result ? formatUsd(result.costInUsd) : '--'}
                       </div>
                       <div className="text-xs text-slate-400">
-                        {result ? `${result.gasCost.toFixed(1)} gwei` : '--'}
+                        {result && typeof result === 'object' && 'gasCost' in result ? `${result.gasCost.toFixed(1)} gwei` : '--'}
                       </div>
                     </div>
                   </div>
