@@ -112,7 +112,12 @@ export function GasChart() {
   useEffect(() => {
     if (!chartReady || !chart || !series || selectedChains.length === 0) return;
 
+    let isActive = true;
+    let intervalId: NodeJS.Timeout;
+
     const updateChartData = async () => {
+      if (!isActive) return;
+      
       setLoading(true);
       try {
         const intervalValue = CHART_INTERVALS[chartInterval as keyof typeof CHART_INTERVALS]?.value || 15;
@@ -121,6 +126,8 @@ export function GasChart() {
         const primaryChain = selectedChains[0];
         const history = await getGasHistory(primaryChain, 24);
         
+        if (!isActive) return; // Check if component is still mounted
+        
         console.log('Fetched history:', history?.length, 'records for', primaryChain);
         
         if (history && history.length > 0) {
@@ -128,7 +135,7 @@ export function GasChart() {
           const candleData = aggregateToCandles(history, intervalValue);
           console.log('Generated candlestick data:', candleData.length, 'candles');
           
-          if (candleData.length > 0) {
+          if (candleData.length > 0 && isActive) {
             try {
               series.setData(candleData);
               console.log('Chart data updated successfully with candlesticks');
@@ -139,8 +146,10 @@ export function GasChart() {
                 time: candle.time,
                 value: candle.close
               }));
-              series.setData(lineData);
-              console.log('Chart data updated successfully with line series');
+              if (isActive) {
+                series.setData(lineData);
+                console.log('Chart data updated successfully with line series');
+              }
             }
           } else {
             console.log('No candle data generated from history');
@@ -151,17 +160,29 @@ export function GasChart() {
       } catch (error) {
         console.error('Error updating chart data:', error);
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
+    // Initial load
     updateChartData();
     
-    // Set up interval to refresh chart data every 30 seconds
-    const interval = setInterval(updateChartData, 30000);
+    // Set up interval to refresh chart data every 60 seconds (reduced frequency)
+    intervalId = setInterval(() => {
+      if (isActive) {
+        updateChartData();
+      }
+    }, 60000);
     
-    return () => clearInterval(interval);
-  }, [chartReady, chart, series, chartInterval, selectedChains, getGasHistory]);
+    return () => {
+      isActive = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [chartReady, chartInterval, selectedChains]);
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -208,7 +229,7 @@ export function GasChart() {
         </div>
         
         <div className="mt-4 text-sm text-slate-400 text-center">
-          Chart updates every 30 seconds • Gas prices refresh every 15 seconds
+          Chart updates every 60 seconds • Gas prices refresh every 15 seconds
         </div>
       </CardContent>
     </Card>
