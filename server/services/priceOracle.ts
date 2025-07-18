@@ -9,7 +9,7 @@ export class PriceOracle {
 
   // Uniswap V3 ETH/USDC pool address
   private readonly POOL_ADDRESS = '0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640';
-  
+
   // Pool ABI for Swap events and slot0 function
   private readonly POOL_ABI = [
     'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
@@ -20,7 +20,7 @@ export class PriceOracle {
 
   async start(): Promise<void> {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     console.log('Starting price oracle...');
 
@@ -36,11 +36,11 @@ export class PriceOracle {
   private async connectToUniswap(): Promise<void> {
     const rpcUrl = process.env.ETHEREUM_RPC_URL || 'https://eth-mainnet.g.alchemy.com/v2/demo';
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
-    
+
     // Test connection
     await this.provider.getNetwork();
     console.log('Connected to Ethereum network');
-    
+
     this.uniswapV3Pool = new ethers.Contract(
       this.POOL_ADDRESS,
       this.POOL_ABI,
@@ -50,28 +50,28 @@ export class PriceOracle {
     // Get current price from pool
     const slot0 = await this.uniswapV3Pool.slot0();
     const initialPrice = this.calculatePriceFromSqrtPriceX96(slot0.sqrtPriceX96);
-    
+
     await storage.saveEthPrice({ price: initialPrice });
     this.emitPriceUpdate(initialPrice);
-    
+
     console.log(`Initial ETH/USD price from Uniswap V3: $${initialPrice.toFixed(2)}`);
-    
-    // Set up polling for price updates (every 30 seconds)
+
+    // Set up polling for price updates (every 2 minutes to avoid rate limits)
     this.priceUpdateInterval = setInterval(() => {
       this.fetchCurrentPrice();
-    }, 30000);
+    }, 120000);
   }
 
   private async fetchCurrentPrice(): Promise<void> {
     try {
       if (!this.uniswapV3Pool) return;
-      
+
       const slot0 = await this.uniswapV3Pool.slot0();
       const price = this.calculatePriceFromSqrtPriceX96(slot0.sqrtPriceX96);
-      
+
       await storage.saveEthPrice({ price });
       this.emitPriceUpdate(price);
-      
+
       console.log(`ETH/USD price updated from Uniswap V3: $${price.toFixed(2)}`);
     } catch (error) {
       console.error('Error fetching current price:', error);
@@ -84,7 +84,7 @@ export class PriceOracle {
       // For ETH/USDC pool, we need to calculate: (sqrtPriceX96 / 2^96)^2 * 10^12
       const sqrtPrice = Number(sqrtPriceX96) / Math.pow(2, 96);
       const price = Math.pow(sqrtPrice, 2) * Math.pow(10, 12);
-      
+
       // Ensure reasonable price bounds
       return Math.max(100, Math.min(10000, price));
     } catch (error) {
@@ -96,11 +96,11 @@ export class PriceOracle {
   private startPriceSimulation(): void {
     // Generate initial price
     this.generateEthPrice();
-    
-    // Set up interval for regular price updates (every 30 seconds)
+
+    // Set up interval for regular price updates (every 2 minutes to avoid rate limits)
     this.priceUpdateInterval = setInterval(() => {
       this.generateEthPrice();
-    }, 30000);
+    }, 120000);
   }
 
   private generateEthPrice(): void {
@@ -109,10 +109,10 @@ export class PriceOracle {
     const volatility = 500; // Price can vary by ±$500
     const randomFactor = (Math.random() - 0.5) * 2; // -1 to 1
     const price = basePrice + (volatility * randomFactor);
-    
+
     // Ensure price stays within reasonable bounds
     const finalPrice = Math.max(1000, Math.min(6000, price));
-    
+
     this.handlePriceUpdate(finalPrice);
   }
 
@@ -120,7 +120,7 @@ export class PriceOracle {
     try {
       await storage.saveEthPrice({ price });
       this.emitPriceUpdate(price);
-      
+
       console.log(`ETH/USD price updated: $${price.toFixed(2)}`);
     } catch (error) {
       console.error('Error handling price update:', error);
@@ -141,19 +141,19 @@ export class PriceOracle {
 
   async stop(): Promise<void> {
     this.isRunning = false;
-    
+
     if (this.uniswapV3Pool) {
       this.uniswapV3Pool.removeAllListeners();
     }
-    
+
     if (this.provider) {
       this.provider.removeAllListeners();
       await this.provider.destroy();
     }
-    
+
     this.provider = null;
     this.uniswapV3Pool = null;
-    
+
     console.log('Price oracle stopped');
   }
 }
