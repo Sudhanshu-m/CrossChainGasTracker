@@ -34,7 +34,8 @@ export function GasChart() {
         if (!chartRef.current || !mounted) return;
 
         // Dynamic import of lightweight-charts
-        const { createChart, ColorType } = await import('lightweight-charts');
+        const lightweightCharts = await import('lightweight-charts');
+        const { createChart, ColorType } = lightweightCharts;
         
         const containerWidth = chartRef.current.clientWidth || 800;
         
@@ -59,15 +60,26 @@ export function GasChart() {
           },
         });
 
-        console.log('Chart created, available methods:', Object.keys(newChart));
-        console.log('Has addCandlestickSeries:', typeof newChart.addCandlestickSeries);
+        console.log('Chart created successfully');
+        console.log('Chart methods available:', typeof newChart.addCandlestickSeries !== 'undefined');
 
-        const candlestickSeries = newChart.addCandlestickSeries({
-          upColor: '#10b981',
-          downColor: '#ef4444',
-          wickUpColor: '#10b981',
-          wickDownColor: '#ef4444',
-        });
+        // Try different methods to add candlestick series
+        let candlestickSeries;
+        if (typeof newChart.addCandlestickSeries === 'function') {
+          candlestickSeries = newChart.addCandlestickSeries({
+            upColor: '#10b981',
+            downColor: '#ef4444',
+            wickUpColor: '#10b981',
+            wickDownColor: '#ef4444',
+          });
+        } else {
+          // Fallback to line series if candlestick is not available
+          console.log('Candlestick series not available, using line series');
+          candlestickSeries = newChart.addLineSeries({
+            color: '#10b981',
+            lineWidth: 2,
+          });
+        }
 
         console.log('Candlestick series created successfully');
 
@@ -127,8 +139,22 @@ export function GasChart() {
           console.log('Generated candlestick data:', candleData.length, 'candles');
           
           if (candleData.length > 0) {
-            series.setData(candleData);
-            console.log('Chart data updated successfully');
+            // Check if series supports candlestick data format
+            if (series && typeof series.setData === 'function') {
+              try {
+                series.setData(candleData);
+                console.log('Chart data updated successfully');
+              } catch (error) {
+                console.error('Error setting candlestick data:', error);
+                // Fallback to line data format
+                const lineData = candleData.map(candle => ({
+                  time: candle.time,
+                  value: candle.close
+                }));
+                series.setData(lineData);
+                console.log('Chart updated with line data as fallback');
+              }
+            }
           } else {
             console.log('No candle data generated from history');
           }
