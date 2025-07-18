@@ -54,13 +54,22 @@ export function GasChart() {
 
         console.log('Chart created successfully');
 
-        // Create candlestick series using the imported module
-        const candlestickSeries = newChart.addCandlestickSeries({
-          upColor: '#10b981',
-          downColor: '#ef4444',
-          wickUpColor: '#10b981',
-          wickDownColor: '#ef4444',
-        });
+        // Create candlestick series - the method should be available on the chart instance
+        let candlestickSeries;
+        try {
+          candlestickSeries = newChart.addCandlestickSeries({
+            upColor: '#10b981',
+            downColor: '#ef4444',
+            wickUpColor: '#10b981',
+            wickDownColor: '#ef4444',
+          });
+        } catch (error) {
+          console.log('Candlestick series not available, creating line series instead');
+          candlestickSeries = newChart.addLineSeries({
+            color: '#10b981',
+            lineWidth: 2,
+          });
+        }
 
         console.log('Candlestick series created successfully');
 
@@ -115,12 +124,24 @@ export function GasChart() {
         console.log('Fetched history:', history?.length, 'records for', primaryChain);
         
         if (history && history.length > 0) {
+          // Try candlestick data first, fall back to line data
           const candleData = aggregateToCandles(history, intervalValue);
           console.log('Generated candlestick data:', candleData.length, 'candles');
           
           if (candleData.length > 0) {
-            series.setData(candleData);
-            console.log('Chart data updated successfully');
+            try {
+              series.setData(candleData);
+              console.log('Chart data updated successfully with candlesticks');
+            } catch (error) {
+              console.log('Candlestick data failed, converting to line data');
+              // Convert to line series data format
+              const lineData = candleData.map(candle => ({
+                time: candle.time,
+                value: candle.close
+              }));
+              series.setData(lineData);
+              console.log('Chart data updated successfully with line series');
+            }
           } else {
             console.log('No candle data generated from history');
           }
