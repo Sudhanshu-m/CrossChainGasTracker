@@ -18,7 +18,7 @@ export function GasChart() {
   const { chartInterval, selectedChains, setChartInterval, toggleChainSelection } = useGasStore();
   const { getGasHistory } = useGasTracker();
 
-  // Initialize chart with proper error handling
+  // Initialize chart
   useEffect(() => {
     let mounted = true;
     
@@ -26,14 +26,8 @@ export function GasChart() {
       if (!chartRef.current || !mounted) return;
 
       try {
-        // Wait for container to be ready
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        if (!chartRef.current || !mounted) return;
-
-        // Import lightweight-charts using different approach
+        // Import lightweight-charts
         const LightweightCharts = await import('lightweight-charts');
-        console.log('Imported lightweight-charts:', Object.keys(LightweightCharts));
         
         const containerWidth = chartRef.current.clientWidth || 800;
         
@@ -59,9 +53,8 @@ export function GasChart() {
         });
 
         console.log('Chart created successfully');
-        console.log('Chart methods:', Object.getOwnPropertyNames(newChart));
 
-        // Add candlestick series
+        // Create candlestick series using the imported module
         const candlestickSeries = newChart.addCandlestickSeries({
           upColor: '#10b981',
           downColor: '#ef4444',
@@ -124,15 +117,10 @@ export function GasChart() {
         if (history && history.length > 0) {
           const candleData = aggregateToCandles(history, intervalValue);
           console.log('Generated candlestick data:', candleData.length, 'candles');
-          console.log('Sample candle data:', candleData.slice(0, 3));
           
           if (candleData.length > 0) {
-            try {
-              series.setData(candleData);
-              console.log('Chart data updated successfully');
-            } catch (error) {
-              console.error('Error setting candlestick data:', error);
-            }
+            series.setData(candleData);
+            console.log('Chart data updated successfully');
           } else {
             console.log('No candle data generated from history');
           }
@@ -147,7 +135,12 @@ export function GasChart() {
     };
 
     updateChartData();
-  }, [chartReady, chart, series, chartInterval, selectedChains]);
+    
+    // Set up interval to refresh chart data every 30 seconds
+    const interval = setInterval(updateChartData, 30000);
+    
+    return () => clearInterval(interval);
+  }, [chartReady, chart, series, chartInterval, selectedChains, getGasHistory]);
 
   return (
     <Card className="bg-slate-800 border-slate-700">
@@ -191,6 +184,10 @@ export function GasChart() {
             </div>
           )}
           <div ref={chartRef} className="h-96 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg" />
+        </div>
+        
+        <div className="mt-4 text-sm text-slate-400 text-center">
+          Chart updates every 30 seconds • Gas prices refresh every 15 seconds
         </div>
       </CardContent>
     </Card>
