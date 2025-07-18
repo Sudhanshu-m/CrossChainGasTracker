@@ -57,7 +57,7 @@ export function GasChart() {
         // Create candlestick series
         let candlestickSeries;
         try {
-          candlestickSeries = newChart.addSeries(LightweightCharts.SeriesType.Candlestick, {
+          candlestickSeries = newChart.addSeries('Candlestick', {
             upColor: '#10b981',
             downColor: '#ef4444',
             wickUpColor: '#10b981',
@@ -65,7 +65,7 @@ export function GasChart() {
           });
         } catch (error) {
           console.log('Candlestick series not available, creating line series instead');
-          candlestickSeries = newChart.addSeries(LightweightCharts.SeriesType.Line, {
+          candlestickSeries = newChart.addSeries('Line', {
             color: '#10b981',
             lineWidth: 2,
           });
