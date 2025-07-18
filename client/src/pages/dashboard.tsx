@@ -4,6 +4,7 @@ import { useGasStore } from '../store/gasStore';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { GasPriceCard } from '../components/GasPriceCard';
 import { GasChart } from '../components/GasChart';
+import { SimpleChart } from '../components/SimpleChart';
 import { TransactionSimulator } from '../components/TransactionSimulator';
 import { WalletSimulator } from '../components/WalletSimulator';
 import { HistoricalDataTable } from '../components/HistoricalDataTable';
@@ -89,6 +90,7 @@ export default function Dashboard() {
 
           {/* Chart and Simulator */}
           <div className="lg:col-span-3 space-y-6">
+            <SimpleChart />
             <GasChart />
             {mode === 'live' ? <TransactionSimulator /> : <WalletSimulator />}
           </div>

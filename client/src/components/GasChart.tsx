@@ -59,12 +59,17 @@ export function GasChart() {
           },
         });
 
+        console.log('Chart created, available methods:', Object.keys(newChart));
+        console.log('Has addCandlestickSeries:', typeof newChart.addCandlestickSeries);
+
         const candlestickSeries = newChart.addCandlestickSeries({
           upColor: '#10b981',
           downColor: '#ef4444',
           wickUpColor: '#10b981',
           wickDownColor: '#ef4444',
         });
+
+        console.log('Candlestick series created successfully');
 
         if (mounted) {
           setChart(newChart);
@@ -91,6 +96,7 @@ export function GasChart() {
         };
       } catch (error) {
         console.error('Error initializing chart:', error);
+        console.error('Error details:', error.message, error.stack);
       }
     };
 
@@ -114,15 +120,20 @@ export function GasChart() {
         const primaryChain = selectedChains[0];
         const history = await getGasHistory(primaryChain, 24);
         
+        console.log('Fetched history:', history?.length, 'records for', primaryChain);
+        
         if (history && history.length > 0) {
           const candleData = aggregateToCandles(history, intervalValue);
+          console.log('Generated candlestick data:', candleData.length, 'candles');
+          
           if (candleData.length > 0) {
             series.setData(candleData);
+            console.log('Chart data updated successfully');
           } else {
-            console.log('No candle data generated');
+            console.log('No candle data generated from history');
           }
         } else {
-          console.log('No history data available');
+          console.log('No history data available for', primaryChain);
         }
       } catch (error) {
         console.error('Error updating chart data:', error);
