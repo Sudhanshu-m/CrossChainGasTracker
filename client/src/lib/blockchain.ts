@@ -33,52 +33,57 @@ export function formatDateTime(timestamp: number): string {
   return new Date(timestamp).toLocaleString();
 }
 
-export function aggregateToCandles(data: any[], intervalMinutes: number) {
-  if (!data || data.length === 0) {
-    console.log('No data provided for candlestick aggregation');
+export function aggregateToCandles(history: any[], intervalMinutes: number = 15) {
+  if (!history || history.length === 0) {
+    console.log('No history data to aggregate');
     return [];
   }
-  
+
+  console.log('Aggregating', history.length, 'records with', intervalMinutes, 'minute intervals');
+
+  // Sort by timestamp
+  const sortedHistory = [...history].sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+
+  const candles: any[] = [];
   const intervalMs = intervalMinutes * 60 * 1000;
-  const candles = [];
-  
-  // Group data by time intervals
-  const groups = new Map();
-  
-  for (const point of data) {
-    if (!point.timestamp || typeof point.baseFee !== 'number' || typeof point.priorityFee !== 'number') {
-      console.warn('Invalid data point:', point);
-      continue;
+
+  // Group data by interval
+  const intervalGroups = new Map();
+
+  for (const record of sortedHistory) {
+    const currentTime = new Date(record.timestamp).getTime();
+    const intervalStart = Math.floor(currentTime / intervalMs) * intervalMs;
+
+    if (!intervalGroups.has(intervalStart)) {
+      intervalGroups.set(intervalStart, []);
     }
-    
-    const timestamp = new Date(point.timestamp).getTime();
-    const intervalStart = Math.floor(timestamp / intervalMs) * intervalMs;
-    
-    if (!groups.has(intervalStart)) {
-      groups.set(intervalStart, []);
-    }
-    groups.get(intervalStart).push(point);
+    intervalGroups.get(intervalStart).push(record);
   }
-  
-  // Convert groups to candlestick data
-  for (const [timestamp, points] of groups) {
-    // Sort points by timestamp within the interval
-    points.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    
-    const values = points.map(p => p.baseFee + p.priorityFee);
-    
-    if (values.length > 0) {
-      candles.push({
-        time: Math.floor(timestamp / 1000), // Convert to seconds for lightweight-charts
-        open: values[0],
-        high: Math.max(...values),
-        low: Math.min(...values),
-        close: values[values.length - 1]
-      });
-    }
+
+  // Create candles from groups
+  for (const [intervalStart, intervalData] of intervalGroups.entries()) {
+    if (intervalData.length === 0) continue;
+
+    const totalFees = intervalData.map((d: any) => {
+      const baseFee = parseFloat(d.baseFee) || 0;
+      const priorityFee = parseFloat(d.priorityFee) || 0;
+      return baseFee + priorityFee;
+    });
+
+    const candle = {
+      time: intervalStart / 1000, // Convert to seconds for lightweight-charts
+      open: totalFees[0],
+      high: Math.max(...totalFees),
+      low: Math.min(...totalFees),
+      close: totalFees[totalFees.length - 1]
+    };
+
+    candles.push(candle);
   }
-  
+
   const sortedCandles = candles.sort((a, b) => a.time - b.time);
-  console.log(`Generated ${sortedCandles.length} candlesticks from ${data.length} data points`);
+  console.log('Created', sortedCandles.length, 'candles');
   return sortedCandles;
 }

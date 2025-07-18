@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,13 +8,10 @@ import { useGasTracker } from '../hooks/useGasTracker';
 import { CHAINS, CHART_INTERVALS } from '../lib/constants';
 import { aggregateToCandles } from '../lib/blockchain';
 
-// Import types for better TypeScript support
-import type { IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
-
 export function GasChart() {
   const chartRef = useRef<HTMLDivElement>(null);
-  const [chart, setChart] = useState<IChartApi | null>(null);
-  const [series, setSeries] = useState<ISeriesApi<"Candlestick"> | null>(null);
+  const [chart, setChart] = useState<any>(null);
+  const [series, setSeries] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [chartReady, setChartReady] = useState(false);
   
@@ -33,17 +31,17 @@ export function GasChart() {
         
         if (!chartRef.current || !mounted) return;
 
-        // Dynamic import of lightweight-charts
-        const lightweightCharts = await import('lightweight-charts');
-        const { createChart, ColorType } = lightweightCharts;
+        // Import lightweight-charts using different approach
+        const LightweightCharts = await import('lightweight-charts');
+        console.log('Imported lightweight-charts:', Object.keys(LightweightCharts));
         
         const containerWidth = chartRef.current.clientWidth || 800;
         
-        const newChart = createChart(chartRef.current, {
+        const newChart = LightweightCharts.createChart(chartRef.current, {
           width: containerWidth,
           height: 400,
           layout: {
-            background: { type: ColorType.Solid, color: '#1e293b' },
+            background: { type: LightweightCharts.ColorType.Solid, color: '#1e293b' },
             textColor: '#f8fafc',
           },
           grid: {
@@ -61,25 +59,15 @@ export function GasChart() {
         });
 
         console.log('Chart created successfully');
-        console.log('Chart methods available:', typeof newChart.addCandlestickSeries !== 'undefined');
+        console.log('Chart methods:', Object.getOwnPropertyNames(newChart));
 
-        // Try different methods to add candlestick series
-        let candlestickSeries;
-        if (typeof newChart.addCandlestickSeries === 'function') {
-          candlestickSeries = newChart.addCandlestickSeries({
-            upColor: '#10b981',
-            downColor: '#ef4444',
-            wickUpColor: '#10b981',
-            wickDownColor: '#ef4444',
-          });
-        } else {
-          // Fallback to line series if candlestick is not available
-          console.log('Candlestick series not available, using line series');
-          candlestickSeries = newChart.addLineSeries({
-            color: '#10b981',
-            lineWidth: 2,
-          });
-        }
+        // Add candlestick series
+        const candlestickSeries = newChart.addCandlestickSeries({
+          upColor: '#10b981',
+          downColor: '#ef4444',
+          wickUpColor: '#10b981',
+          wickDownColor: '#ef4444',
+        });
 
         console.log('Candlestick series created successfully');
 
@@ -108,7 +96,6 @@ export function GasChart() {
         };
       } catch (error) {
         console.error('Error initializing chart:', error);
-        console.error('Error details:', error.message, error.stack);
       }
     };
 
@@ -137,23 +124,14 @@ export function GasChart() {
         if (history && history.length > 0) {
           const candleData = aggregateToCandles(history, intervalValue);
           console.log('Generated candlestick data:', candleData.length, 'candles');
+          console.log('Sample candle data:', candleData.slice(0, 3));
           
           if (candleData.length > 0) {
-            // Check if series supports candlestick data format
-            if (series && typeof series.setData === 'function') {
-              try {
-                series.setData(candleData);
-                console.log('Chart data updated successfully');
-              } catch (error) {
-                console.error('Error setting candlestick data:', error);
-                // Fallback to line data format
-                const lineData = candleData.map(candle => ({
-                  time: candle.time,
-                  value: candle.close
-                }));
-                series.setData(lineData);
-                console.log('Chart updated with line data as fallback');
-              }
+            try {
+              series.setData(candleData);
+              console.log('Chart data updated successfully');
+            } catch (error) {
+              console.error('Error setting candlestick data:', error);
             }
           } else {
             console.log('No candle data generated from history');

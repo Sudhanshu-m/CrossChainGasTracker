@@ -4,7 +4,6 @@ import { useGasStore } from '../store/gasStore';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { GasPriceCard } from '../components/GasPriceCard';
 import { GasChart } from '../components/GasChart';
-import { SimpleChart } from '../components/SimpleChart';
 import { TransactionSimulator } from '../components/TransactionSimulator';
 import { WalletSimulator } from '../components/WalletSimulator';
 import { HistoricalDataTable } from '../components/HistoricalDataTable';
@@ -20,7 +19,7 @@ export default function Dashboard() {
     connected, 
     setMode 
   } = useGasStore();
-  
+
   const { isConnected } = useWebSocket();
 
   return (
@@ -45,7 +44,7 @@ export default function Dashboard() {
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Mode Toggle */}
               <div className="flex items-center space-x-2 bg-slate-900 rounded-lg p-1">
@@ -66,7 +65,7 @@ export default function Dashboard() {
                   Simulate
                 </Button>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-slate-400">ETH/USD:</span>
                 <span className="font-mono text-lg font-semibold text-green-400">
@@ -80,7 +79,7 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          
+
           {/* Gas Price Cards */}
           <div className="lg:col-span-1 space-y-4">
             {Object.entries(chains).map(([chain, data]) => (
@@ -90,12 +89,13 @@ export default function Dashboard() {
 
           {/* Chart and Simulator */}
           <div className="lg:col-span-3 space-y-6">
-            <SimpleChart />
+            <div className="mb-8">
             <GasChart />
+          </div>
             {mode === 'live' ? <TransactionSimulator /> : <WalletSimulator />}
           </div>
         </div>
-        
+
         {/* Historical Data Table */}
         <div className="mt-8">
           <HistoricalDataTable />
@@ -120,7 +120,7 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-sm font-semibold text-white mb-3">Technical Info</h3>
               <div className="space-y-2 text-sm text-slate-400">
@@ -130,7 +130,7 @@ export default function Dashboard() {
                 <div>Price Feed: Uniswap V3</div>
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-sm font-semibold text-white mb-3">About</h3>
               <p className="text-sm text-slate-400">
@@ -139,7 +139,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          
+
           <div className="border-t border-slate-700 pt-6 mt-6">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-400">
