@@ -63,7 +63,7 @@ export function aggregateToCandles(history: any[], intervalMinutes: number = 15)
   }
 
   // Create candles from groups
-  for (const [intervalStart, intervalData] of intervalGroups.entries()) {
+  for (const [intervalStart, intervalData] of Array.from(intervalGroups.entries())) {
     if (intervalData.length === 0) continue;
 
     const totalFees = intervalData.map((d: any) => {

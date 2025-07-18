@@ -13,7 +13,7 @@ interface GasStore {
   simulationResults: SimulationResult | null;
   chartInterval: string;
   selectedChains: string[];
-  
+
   // Actions
   setMode: (mode: 'live' | 'simulation') => void;
   updateChainData: (chain: string, data: Partial<ChainData>) => void;
@@ -62,10 +62,10 @@ export const useGasStore = create<GasStore>((set, get) => ({
   simulationResults: null,
   chartInterval: '15m',
   selectedChains: ['ethereum', 'polygon', 'arbitrum'],
-  
+
   // Actions
   setMode: (mode) => set({ mode }),
-  
+
   updateChainData: (chain, data) => set((state) => ({
     chains: {
       ...state.chains,
@@ -76,24 +76,24 @@ export const useGasStore = create<GasStore>((set, get) => ({
     },
     lastUpdate: Date.now()
   })),
-  
+
   updateEthPrice: (price) => set({ ethPrice: price, lastUpdate: Date.now() }),
-  
+
   setConnected: (connected) => set({ connected }),
-  
+
   setSimulationValue: (value) => set({ simulationValue: value }),
-  
+
   setSimulationGasLimit: (gasLimit) => set({ simulationGasLimit: gasLimit }),
-  
+
   setSimulationResults: (results) => set({ simulationResults: results }),
-  
+
   setChartInterval: (interval) => set({ chartInterval: interval }),
-  
+
   toggleChainSelection: (chain) => set((state) => ({
     selectedChains: state.selectedChains.includes(chain)
       ? state.selectedChains.filter(c => c !== chain)
       : [...state.selectedChains, chain]
   })),
-  
+
   setLastUpdate: (timestamp) => set({ lastUpdate: timestamp })
 }));

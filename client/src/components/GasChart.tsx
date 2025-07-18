@@ -54,7 +54,7 @@ export function GasChart() {
 
         console.log('Chart created successfully');
 
-        // Create candlestick series - the method should be available on the chart instance
+        // Create candlestick series
         let candlestickSeries;
         try {
           candlestickSeries = newChart.addCandlestickSeries({

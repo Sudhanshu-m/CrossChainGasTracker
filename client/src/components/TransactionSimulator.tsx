@@ -128,7 +128,7 @@ export function TransactionSimulator() {
             
             <div className="space-y-3">
               {Object.entries(CHAINS).map(([key, chainInfo]) => {
-                const result = simulationResults?.[key];
+                const result = simulationResults?.[key as keyof typeof simulationResults];
                 return (
                   <div key={key} className="flex items-center justify-between p-4 bg-slate-900 rounded-lg border border-slate-700">
                     <div className="flex items-center space-x-3">

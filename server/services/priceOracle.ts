@@ -28,7 +28,7 @@ export class PriceOracle {
       // Try to connect to Uniswap V3 first
       await this.connectToUniswap();
     } catch (error) {
-      console.log('Failed to connect to Uniswap V3, using simulated prices:', error.message);
+      console.log('Failed to connect to Uniswap V3, using simulated prices:', (error as Error).message);
       this.startPriceSimulation();
     }
   }

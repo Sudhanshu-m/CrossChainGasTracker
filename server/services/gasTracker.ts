@@ -124,7 +124,7 @@ export class GasTracker {
       let priorityFee = 2; // Default priority fee in gwei
       
       if (block.baseFeePerGas) {
-        baseFee = parseFloat(ethers.utils.formatUnits(block.baseFeePerGas, 'gwei'));
+        baseFee = parseFloat(ethers.formatUnits(block.baseFeePerGas, 'gwei'));
       }
 
       // For Arbitrum, handle L1 fees differently
@@ -168,7 +168,7 @@ export class GasTracker {
   async stop(): Promise<void> {
     this.isRunning = false;
     
-    for (const [chain, provider] of this.providers) {
+    for (const [chain, provider] of Array.from(this.providers.entries())) {
       try {
         provider.removeAllListeners();
         await provider.destroy();

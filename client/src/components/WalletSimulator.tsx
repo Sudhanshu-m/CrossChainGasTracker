@@ -21,7 +21,7 @@ export function WalletSimulator() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResults, setSimulationResults] = useState<any>(null);
   
-  const { gasData, ethPrice } = useGasStore();
+  const { ethPrice, gasPrices } = useGasStore();
   const { simulateTransaction } = useGasTracker();
 
   // Generate a random wallet address for demo
@@ -66,7 +66,7 @@ export function WalletSimulator() {
   };
 
   const getGasStatus = (chain: string) => {
-    const currentGas = gasData[chain];
+    const currentGas = gasPrices.find(gp => gp.chain === chain);
     if (!currentGas) return 'unknown';
     
     const totalGas = currentGas.baseFee + currentGas.priorityFee;
