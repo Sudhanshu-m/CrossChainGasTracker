@@ -57,7 +57,7 @@ export function GasChart() {
         // Create candlestick series
         let candlestickSeries;
         try {
-          candlestickSeries = newChart.addSeries('Candlestick', {
+          candlestickSeries = newChart.addCandlestickSeries({
             upColor: '#10b981',
             downColor: '#ef4444',
             wickUpColor: '#10b981',
@@ -65,7 +65,7 @@ export function GasChart() {
           });
         } catch (error) {
           console.log('Candlestick series not available, creating line series instead');
-          candlestickSeries = newChart.addSeries('Line', {
+          candlestickSeries = newChart.addLineSeries({
             color: '#10b981',
             lineWidth: 2,
           });
