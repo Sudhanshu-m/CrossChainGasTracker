@@ -7,10 +7,13 @@ import { useGasTracker } from '../hooks/useGasTracker';
 import { CHAINS, CHART_INTERVALS } from '../lib/constants';
 import { aggregateToCandles } from '../lib/blockchain';
 
+// Import types for better TypeScript support
+import type { IChartApi, ISeriesApi, CandlestickData } from 'lightweight-charts';
+
 export function GasChart() {
   const chartRef = useRef<HTMLDivElement>(null);
-  const [chart, setChart] = useState<any>(null);
-  const [series, setSeries] = useState<any>(null);
+  const [chart, setChart] = useState<IChartApi | null>(null);
+  const [series, setSeries] = useState<ISeriesApi<"Candlestick"> | null>(null);
   const [loading, setLoading] = useState(false);
   const [chartReady, setChartReady] = useState(false);
   
@@ -59,10 +62,8 @@ export function GasChart() {
         const candlestickSeries = newChart.addCandlestickSeries({
           upColor: '#10b981',
           downColor: '#ef4444',
-          borderDownColor: '#ef4444',
-          borderUpColor: '#10b981',
-          wickDownColor: '#ef4444',
           wickUpColor: '#10b981',
+          wickDownColor: '#ef4444',
         });
 
         if (mounted) {
@@ -117,7 +118,11 @@ export function GasChart() {
           const candleData = aggregateToCandles(history, intervalValue);
           if (candleData.length > 0) {
             series.setData(candleData);
+          } else {
+            console.log('No candle data generated');
           }
+        } else {
+          console.log('No history data available');
         }
       } catch (error) {
         console.error('Error updating chart data:', error);

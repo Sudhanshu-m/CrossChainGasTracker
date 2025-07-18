@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a React-based web application that tracks real-time gas prices across multiple blockchain networks (Ethereum, Polygon, and Arbitrum). The application provides live gas price monitoring, historical data visualization, and transaction cost simulation capabilities. It uses WebSocket connections for real-time updates and implements a sophisticated charting system with candlestick visualizations.
+This is a React-based web application that tracks real-time gas prices across multiple blockchain networks (Ethereum, Polygon, and Arbitrum). The application provides live gas price monitoring, historical data visualization, wallet simulation, and transaction cost analysis. It uses WebSocket connections for real-time updates and implements a sophisticated charting system with candlestick visualizations and real ETH/USD pricing from Uniswap V3.
 
 ## User Preferences
 
@@ -62,10 +62,12 @@ Preferred communication style: Simple, everyday language.
 ### Interactive Dashboard
 - **Components**:
   - Gas price cards with live status indicators
-  - Candlestick charts with configurable time intervals
-  - Historical data tables
-  - Transaction cost simulator
+  - Candlestick charts with configurable time intervals (15min, 30min, 1h, 4h)
+  - Historical data tables with CSV export
+  - Transaction cost simulator with cross-chain comparison
+  - Wallet simulator with demo address generation
   - Real-time WebSocket connection status
+  - Live/Simulation mode toggle
 
 ## Data Flow
 
@@ -137,3 +139,17 @@ Preferred communication style: Simple, everyday language.
 - **Solution**: Drizzle ORM with shared schema definitions
 - **Benefits**: Full TypeScript support, lightweight, excellent migrations
 - **Features**: Shared types between client and server, Zod validation integration
+
+## Recent Changes (January 2025)
+
+### Implemented Missing Features
+- **Wallet Simulator**: Complete wallet simulation with demo address generation, balance tracking, transaction cost comparison, and gas optimization recommendations
+- **Real Uniswap V3 Integration**: Added real ETH/USD price fetching from Uniswap V3 pool contract with automatic fallback to simulation when RPC endpoints are rate-limited
+- **Fixed Candlestick Chart**: Resolved TypeScript errors and chart initialization issues with proper lightweight-charts v5.0.8 integration
+- **Enhanced UI**: Added Live/Simulation mode toggle with distinct interfaces for different use cases
+
+### Technical Improvements
+- Improved chart initialization with proper error handling and TypeScript types
+- Enhanced data validation in aggregateToCandles function
+- Added comprehensive wallet simulation with realistic gas cost analysis
+- Implemented dual-mode architecture (Live vs Simulation)
